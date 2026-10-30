@@ -34,6 +34,17 @@ bazel_dep(
     version = "0.4.0",
 )
 
+bazel_dep(
+    name = "rules_shell",
+    version = "0.8.0",
+)
+
+# Older browser toolchain definitions use APIs removed in Bazel 9.
+bazel_dep(
+    name = "aspect_bazel_lib",
+    version = "2.19.2",
+)
+
 ##### Java dependencies #####
 bazel_dep(
     name = "rules_java",
