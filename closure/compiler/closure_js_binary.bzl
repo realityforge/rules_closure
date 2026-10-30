@@ -100,6 +100,19 @@ def _impl(ctx):
     # granularity of error suppression, and adds the suppression codes to printed
     # error messages.
     inputs = []
+    extension_args = []
+    if bool(ctx.file.compiler_config) != bool(ctx.outputs.compiler_report):
+        fail("compiler_config and compiler_report must be supplied together")
+    if ctx.file.compiler_config:
+        inputs.append(ctx.file.compiler_config)
+        outputs.append(ctx.outputs.compiler_report)
+        files.append(ctx.outputs.compiler_report)
+        extension_args = [
+            "--compiler_config",
+            ctx.file.compiler_config.path,
+            "--compiler_report",
+            ctx.outputs.compiler_report.path,
+        ]
     args = [
         "JsCompiler",
         "--js_output_file",
@@ -245,7 +258,7 @@ def _impl(ctx):
         args = [arg for arg in args if arg not in ctx.attr.nodefs]
 
     all_args = ctx.actions.args()
-    all_args.add_all(args)
+    all_args.add_all(args + extension_args)
 
     # We shall now pass all transitive sources, including externs files.
     all_args.add_all(
@@ -271,7 +284,7 @@ def _impl(ctx):
     ctx.actions.run(
         inputs = inputs,
         outputs = outputs,
-        executable = ctx.executable._ClosureWorker,
+        executable = ctx.executable.compiler,
         arguments = [all_args],
         mnemonic = "Closure",
         execution_requirements = {"supports-workers": "1"},
@@ -290,6 +303,8 @@ def _impl(ctx):
             bin = ctx.outputs.bin,
             map = ctx.outputs.map,
             language = ctx.attr.language,
+            compiler_config = ctx.file.compiler_config,
+            compiler_report = ctx.outputs.compiler_report,
         ),
         js,
         DefaultInfo(
@@ -314,6 +329,19 @@ closure_js_binary = rule(
     implementation = _impl,
     attrs = dict({
         "compilation_level": attr.string(default = "ADVANCED"),
+        "compiler": attr.label(
+            default = Label("//java/io/bazel/rules/closure:ClosureWorker"),
+            executable = True,
+            cfg = "exec",
+            doc = "Executable implementing the Closure worker protocol for this compilation.",
+        ),
+        "compiler_config": attr.label(
+            allow_single_file = True,
+            doc = "Declared configuration input for a CompilerFactory; requires compiler_report.",
+        ),
+        "compiler_report": attr.output(
+            doc = "Report produced by the CompilerFactory; requires compiler_config.",
+        ),
         "css": attr.label(providers = [ClosureCssBinaryInfo]),
         "debug": attr.bool(default = False),
         "defs": attr.string_list(),
