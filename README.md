@@ -54,6 +54,8 @@ Upstream pull requests require separate authority.
    verify the intended feature heads afterward. Retire an upstreamed feature only after its
    requirement is verified on the baseline. Retain the original merged PRs as provenance.
    Avoid independently rebasing integration and features and then merging equivalent commits.
+   Validate and publish this refreshed graph with exact leases before opening new feature PRs,
+   so their remote integration base already contains the frozen baseline.
 
 6. For new behavior, reproduce the problem and add focused, self-contained regression
    coverage. Verify each feature independently. Push feature/<descriptive-name> and open
@@ -61,12 +63,10 @@ Upstream pull requests require separate authority.
    non-obvious choices and meaningful validation for an upstream maintainer. Keep consumer
    identities out of public code, commits, PRs and this README. Inspect the complete diff,
    satisfy required review/checks, and merge with a merge commit. Retain the feature branch.
+   Fetch and reconcile each remote merge before testing the combined integration graph.
 
 7. Test the combined integration commit and distinguish baseline failures from regressions.
-   Verify every retained requirement and patch disposition. If a dependency fork also needs
-   work, invoke one bounded fork refresh using exact dependency commits; that delegated
-   refresh returns a tested SHA without starting another rollout. Preserve existing work
-   and reuse suitable in-flight changes with attribution. Test unreleased APIs against the
+   Verify every retained requirement and patch disposition. Test unreleased APIs against the
    actual source commits that provide them.
 
 8. Fetch upstream again before final publication; refresh and repeat affected validation if
@@ -75,7 +75,12 @@ Upstream pull requests require separate authority.
    lease before retrying. Permanently retain a unique annotated snapshot tag for every tested,
    published integration tip. Report that immutable commit as the consumer pin.
 
-9. Migrate scoped consumers serially in dependency order using the frozen tested fork SHAs.
+9. After publishing this tested snapshot, refresh any dependent fork that also needs work.
+   Give that bounded refresh the published immutable dependency SHA and request a tested SHA
+   without starting another rollout. Preserve existing work and reuse suitable in-flight
+   changes with attribution. Finish that repository before proceeding.
+
+   Migrate scoped consumers serially in dependency order using the frozen tested fork SHAs.
    Update pins, verified archive checksums, dependency locks, callers and obsolete patches.
    Preserve required behavior while retiring replaced infrastructure. Deliver shared sources
    before refreshing their vendored mirrors, preserving mirror-local changes. Run each
