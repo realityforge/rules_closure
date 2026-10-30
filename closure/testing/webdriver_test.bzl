@@ -131,12 +131,14 @@ def webdriver_test(
         test_file_js,
         data = None,
         tags = None,
+        runtime_defines = {},
         visibility = None,
         **kwargs):
     """ Macro for running Closure JavaScript binary on browsers.
 
     Args:
         test_file_js: JavaScipt binary output from closure_js_binary
+        runtime_defines: String-valued Closure definitions set before loading the test.
         **kwargs: Additional arguments for test rules.
 
     To run the test target, use `bazel test :<name>`.
@@ -154,6 +156,7 @@ def webdriver_test(
     _gen_test_html(
         name = html,
         test_file_js = test_file_js,
+        runtime_defines = runtime_defines,
         tags = tags,
     )
 
@@ -225,11 +228,14 @@ def webdriver_test(
 
 def _gen_test_html_impl(ctx):
     """Implementation of the gen_test_html rule."""
+    # Inline JSON must not contain an HTML script-closing tag.
+    runtime_defines = json.encode(ctx.attr.runtime_defines).replace("<", "\\u003c")
     ctx.actions.expand_template(
         template = ctx.file._template,
         output = ctx.outputs.html_file,
         substitutions = {
             "{{TEST_FILE_JS}}": ctx.attr.test_file_js,
+            "{{CLOSURE_DEFINES}}": runtime_defines,
         },
     )
     runfiles = ctx.runfiles(files = [ctx.outputs.html_file], collect_default = True)
@@ -243,6 +249,7 @@ _gen_test_html = rule(
     implementation = _gen_test_html_impl,
     attrs = {
         "test_file_js": attr.string(mandatory = True),
+        "runtime_defines": attr.string_dict(),
         "_template": attr.label(
             default = Label("//closure/testing:gen_webtest_html.template"),
             allow_single_file = True,
