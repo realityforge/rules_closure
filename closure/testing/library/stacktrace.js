@@ -13,6 +13,19 @@ goog.provide('goog.testing.stacktrace');
 
 
 /**
+ * The V8 stack frame methods used below. Native frames may lack locations.
+ * @typedef {{
+ *   getFunctionName: function(): ?string,
+ *   getFileName: function(): ?string,
+ *   getLineNumber: function(): ?number,
+ *   getColumnNumber: function(): ?number
+ * }}
+ * @private
+ */
+goog.testing.stacktrace.CallSite_;
+
+
+/**
  * Class representing one stack frame.
  * @final
  * @unrestricted
@@ -491,7 +504,7 @@ goog.testing.stacktrace.canonicalize = function(stack) {
 
 /**
  * Returns the native stack trace.
- * @return {string|!Array<!CallSite>}
+ * @return {string|!Array<!goog.testing.stacktrace.CallSite_>}
  * @private
  */
 goog.testing.stacktrace.getNativeStack_ = function() {
@@ -536,7 +549,8 @@ goog.testing.stacktrace.get = function() {
 /**
  * Converts an array of CallSite (elements of a stack trace in V8) to an array
  * of Frames.
- * @param {!Array<!CallSite>} stack The stack as an array of CallSites.
+ * @param {!Array<!goog.testing.stacktrace.CallSite_>} stack The stack as an
+ *     array of CallSites.
  * @return {!Array<!goog.testing.stacktrace.Frame>} The stack as an array of
  *     Frames.
  * @private

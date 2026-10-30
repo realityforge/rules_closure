@@ -264,7 +264,9 @@ goog.testing.TestCase.maxRunTime = 200;
  * @type {function((Function|string), number=, *=): number}
  * @private
  */
-goog.testing.TestCase.protectedSetTimeout_ = goog.global.setTimeout;
+goog.testing.TestCase.protectedSetTimeout_ =
+    /** @type {function((Function|string), number=, *=): number} */
+    (goog.global.setTimeout);
 
 
 /**
@@ -273,7 +275,9 @@ goog.testing.TestCase.protectedSetTimeout_ = goog.global.setTimeout;
  * @type {function((null|number|undefined)): void}
  * @private
  */
-goog.testing.TestCase.protectedClearTimeout_ = goog.global.clearTimeout;
+goog.testing.TestCase.protectedClearTimeout_ =
+    /** @type {function((null|number|undefined)): void} */
+    (goog.global.clearTimeout);
 
 
 /**
