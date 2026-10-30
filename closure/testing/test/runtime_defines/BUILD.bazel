@@ -71,17 +71,17 @@ webdriver_test(
 )
 
 html_fixture(
-    name = "direct_html",
+    name = "direct_fixture",
     browser_test = ":direct",
 )
 
 html_fixture(
-    name = "macro_html",
+    name = "macro_fixture",
     browser_test = ":browser_test",
 )
 
 html_fixture(
-    name = "empty_html",
+    name = "empty_fixture",
     browser_test = ":empty",
 )
 
@@ -90,16 +90,16 @@ py_test(
     size = "small",
     srcs = ["generated_html_test.py"],
     args = [
-        "$(rootpath :direct_html)",
-        "$(rootpath :macro_html)",
-        "$(rootpath :empty_html)",
+        "$(rootpath :direct_fixture)",
+        "$(rootpath :macro_fixture)",
+        "$(rootpath :empty_fixture)",
     ] + select({
         ":preview": ["preview"],
         "//conditions:default": ["production"],
     }),
     data = [
-        ":direct_html",
-        ":empty_html",
-        ":macro_html",
+        ":direct_fixture",
+        ":empty_fixture",
+        ":macro_fixture",
     ],
 )
