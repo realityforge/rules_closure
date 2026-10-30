@@ -197,7 +197,7 @@ def webdriver_test(
             browser = browsers[0],
             test = ":%s_test_runner" % name,
             html_webpath = html_webpath,
-            tags = tags + ["no-sandbox", "native"],
+            tags = tags + ["native"],
             visibility = visibility,
             **kwargs
         )
@@ -212,7 +212,7 @@ def webdriver_test(
                 browser = browser,
                 test = ":%s_test_runner" % name,
                 html_webpath = html_webpath,
-                tags = tags + ["no-sandbox", "native"],
+                tags = tags + ["native"],
                 visibility = visibility,
                 **kwargs
             )
