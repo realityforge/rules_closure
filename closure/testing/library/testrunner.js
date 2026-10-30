@@ -94,7 +94,8 @@ goog.testing.TestRunner = function() {
   function onPageHide() {
     self.clearUniqueId();
   }
-  window.addEventListener('pagehide', onPageHide);
+  window.addEventListener(
+      'pagehide', /** @type {!EventListener} */ (onPageHide));
 };
 
 /**

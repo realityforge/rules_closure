@@ -102,7 +102,9 @@ var maybeGetStack = function(error) {
 // Add an error handler to report errors that may occur during
 // initialization of the page.
 var onerror = window.onerror;
-window.onerror = function(messageOrEvent, url, line, colno, errObj) {
+window.onerror = /** @type {
+    function((Event|string), string=, number=, number=, *=): undefined
+} */ (function(messageOrEvent, url, line, colno, errObj) {
   'use strict';
   // Call any existing onerror handlers, except our boot handler.
   if (onerror && onerror != window['__onerror_at_boot']) {
@@ -128,7 +130,7 @@ window.onerror = function(messageOrEvent, url, line, colno, errObj) {
         'JS ERROR: ' + messageOrEvent + '\nURL: ' + url + '\nLine: ' + line +
         colstr);
   }
-};
+});
 
 /**
  * The onerror handler that may have been set by the test runner.
