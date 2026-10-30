@@ -152,7 +152,7 @@ def webdriver_test(
 
     tags = tags or []
 
-    html = "gen_html_%s" % name
+    html = "%s_html" % name
     _gen_test_html(
         name = html,
         test_file_js = test_file_js,
