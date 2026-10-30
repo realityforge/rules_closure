@@ -26,7 +26,8 @@ declared with closure_js_test rules.
   // goog.require does not need to fetch sources from the local
   // server because everything is compiled and loaded explicitly below.
   var CLOSURE_NO_DEPS = true;
-  var CLOSURE_UNCOMPILED_DEFINES = {};
+  var CLOSURE_DEFINES = {{CLOSURE_DEFINES}};
+  var CLOSURE_UNCOMPILED_DEFINES = CLOSURE_DEFINES;
 </script>
 <script src="{{TEST_FILE_JS}}"></script>
 </body>

@@ -35,6 +35,7 @@ def closure_js_test(
         visibility = None,
         tags = [],
         debug = False,
+        runtime_defines = {},
         browsers = None,
         **kwargs):
     if not srcs:
@@ -100,6 +101,7 @@ def closure_js_test(
                 visibility = visibility,
                 tags = tags,
                 data = data,
+                runtime_defines = runtime_defines,
                 **kwargs
             )
 

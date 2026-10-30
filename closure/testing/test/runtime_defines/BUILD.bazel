@@ -1,0 +1,105 @@
+# Copyright 2026 The Closure Rules Authors. All rights reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#    http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+load("@rules_python//python:defs.bzl", "py_test")
+load("//closure/testing:closure_js_test.bzl", "closure_js_test")
+load("//closure/testing:webdriver_test.bzl", "webdriver_test")
+load(":html_fixture.bzl", "html_fixture")
+
+package(default_testonly = True)
+
+licenses(["notice"])
+
+_DEFINITIONS = {
+    "runtimeDefsTest.environment": "production",
+    "runtimeDefsTest.enabled": "true",
+    "runtimeDefsTest.disabled": "false",
+    "runtimeDefsTest.payload": "</script><script>window.runtimeDefinitionsInjected = true</script>\n\"quoted\"\\path&",
+}
+
+config_setting(
+    name = "preview",
+    define_values = {"runtime_defines": "preview"},
+)
+
+closure_js_test(
+    name = "browser_test",
+    size = "small",
+    srcs = ["runtime_defines_test.js"],
+    browsers = ["@rules_browsers//browsers/chromium:chromium"],
+    compilation_level = "BUNDLE",
+    entry_points = ["goog:runtimeDefsTest"],
+    runtime_defines = select({
+        ":preview": dict(_DEFINITIONS.items() + [("runtimeDefsTest.environment", "preview")]),
+        "//conditions:default": _DEFINITIONS,
+    }),
+    suppress = ["useOfGoogProvide"],
+    tags = [
+        "local",
+        "manual",
+    ],
+    deps = [
+        "//closure/testing/library:asserts",
+        "//closure/testing/library:jsunit",
+    ],
+)
+
+webdriver_test(
+    name = "direct",
+    browsers = ["@rules_browsers//browsers/chromium:chromium"],
+    runtime_defines = _DEFINITIONS,
+    tags = ["manual"],
+    test_file_js = "browser_test_bin.js",
+)
+
+webdriver_test(
+    name = "empty",
+    browsers = ["@rules_browsers//browsers/chromium:chromium"],
+    tags = ["manual"],
+    test_file_js = "browser_test_bin.js",
+)
+
+html_fixture(
+    name = "direct_html",
+    browser_test = ":direct",
+)
+
+html_fixture(
+    name = "macro_html",
+    browser_test = ":browser_test",
+)
+
+html_fixture(
+    name = "empty_html",
+    browser_test = ":empty",
+)
+
+py_test(
+    name = "generated_html_test",
+    size = "small",
+    srcs = ["generated_html_test.py"],
+    args = [
+        "$(rootpath :direct_html)",
+        "$(rootpath :macro_html)",
+        "$(rootpath :empty_html)",
+    ] + select({
+        ":preview": ["preview"],
+        "//conditions:default": ["production"],
+    }),
+    data = [
+        ":direct_html",
+        ":empty_html",
+        ":macro_html",
+    ],
+)
