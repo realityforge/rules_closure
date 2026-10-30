@@ -39,6 +39,7 @@ java_library(
         "//javatests/com/google/javascript/jscomp:__pkg__",
     ],
     deps = [
+        ":compiler_factory",
         "//closure/compiler",
         "//java/io/bazel/rules/closure:build_info_java_proto",
         "//java/io/bazel/rules/closure:webpath",
@@ -49,4 +50,11 @@ java_library(
         "@google_bazel_common//third_party/java/jsr330_inject",
         "@maven//:args4j_args4j",
     ],
+)
+
+java_library(
+    name = "compiler_factory",
+    srcs = ["CompilerFactory.java"],
+    visibility = ["//visibility:public"],
+    deps = ["//closure/compiler"],
 )

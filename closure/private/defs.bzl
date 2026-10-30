@@ -102,7 +102,7 @@ of the srcs subprovider. This field exists for optimization.""",
     "exports": "",
 })
 
-ClosureJsBinaryInfo = provider("ClosureJsBinaryInfo", fields = ["bin", "map", "language"])
+ClosureJsBinaryInfo = provider("ClosureJsBinaryInfo", fields = ["bin", "map", "language", "compiler_config", "compiler_report"])
 ClosureCssBinaryInfo = provider("ClosureCssBinaryInfo", fields = ["bin", "map", "renaming_map", "labels"])
 
 ClosureCssLibraryInfo = provider("ClosureCssLibraryInfo", fields = [

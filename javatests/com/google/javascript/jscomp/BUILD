@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-load("@rules_java//java:defs.bzl", "java_test")
+load("@rules_java//java:defs.bzl", "java_binary", "java_library", "java_test")
 
 licenses(["notice"])
 
@@ -45,6 +45,50 @@ java_test(
     deps = [
         "//java/com/google/javascript/jscomp",
         "@google_bazel_common//third_party/java/guava:testlib",
+        "@google_bazel_common//third_party/java/junit",
+    ],
+)
+
+java_library(
+    name = "test_compiler_factory",
+    testonly = True,
+    srcs = ["TestCompilerFactory.java"],
+    visibility = ["//closure/compiler/test/extensions:__pkg__"],
+    deps = [
+        "//closure/compiler",
+        "//java/com/google/javascript/jscomp:compiler_factory",
+    ],
+)
+
+java_library(
+    name = "registered_test_compiler_factory",
+    testonly = True,
+    resource_strip_prefix = "javatests/com/google/javascript/jscomp",
+    resources = ["META-INF/services/com.google.javascript.jscomp.CompilerFactory"],
+    runtime_deps = [":test_compiler_factory"],
+)
+
+java_binary(
+    name = "extension_worker",
+    testonly = True,
+    jvm_flags = ["-Xss20m"],
+    main_class = "io.bazel.rules.closure.ClosureWorker",
+    visibility = ["//closure/compiler/test/extensions:__pkg__"],
+    runtime_deps = [
+        ":registered_test_compiler_factory",
+        "//java/io/bazel/rules/closure:worker_main",
+    ],
+)
+
+java_test(
+    name = "CompilerExtensionsTest",
+    size = "small",
+    srcs = ["CompilerExtensionsTest.java"],
+    deps = [
+        ":test_compiler_factory",
+        "//closure/compiler",
+        "//java/com/google/javascript/jscomp",
+        "//java/com/google/javascript/jscomp:compiler_factory",
         "@google_bazel_common//third_party/java/junit",
     ],
 )

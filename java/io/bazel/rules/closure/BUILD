@@ -20,12 +20,18 @@ licenses(["notice"])
 
 java_binary(
     name = "ClosureWorker",
-    srcs = ["ClosureWorker.java"],
     jvm_flags = [
         "-Xss20m",  # JSCompiler needs big stacks for recursive parsing
         "-XX:+UseParallelGC",  # Best GC when app isn't latency sensitive
     ],
     main_class = "io.bazel.rules.closure.ClosureWorker",
+    visibility = ["//visibility:public"],
+    runtime_deps = [":worker_main"],
+)
+
+java_library(
+    name = "worker_main",
+    srcs = ["ClosureWorker.java"],
     visibility = ["//visibility:public"],
     deps = [
         "//java/com/google/javascript/jscomp",

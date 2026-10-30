@@ -34,6 +34,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.ServiceLoader;
 import java.util.Set;
 import javax.inject.Inject;
 
@@ -91,10 +92,11 @@ public final class JsCompiler implements CommandLineProgram {
     List<String> roots = new ArrayList<>();
     Set<DiagnosticType> globalSuppressions = new HashSet<>();
     Path outputErrors = null;
+    Path compilerConfig = null;
+    Path compilerReport = null;
     boolean expectFailure = false;
     boolean expectWarnings = false;
     boolean exportTestFunctions = false;
-    boolean checksOnly = false;
 
     // Compiler flags we want to read.
     Path jsOutputFile = null;
@@ -106,6 +108,12 @@ public final class JsCompiler implements CommandLineProgram {
     while (iargs.hasNext()) {
       String arg = iargs.next();
       switch (arg) {
+        case "--compiler_config":
+          compilerConfig = Paths.get(iargs.next());
+          continue;
+        case "--compiler_report":
+          compilerReport = Paths.get(iargs.next());
+          continue;
         case "--info":
           infos.add(JsCheckerHelper.loadClosureJsLibraryInfo(Paths.get(iargs.next())));
           continue;
@@ -131,9 +139,6 @@ public final class JsCompiler implements CommandLineProgram {
         case "--js_output_file":
           jsOutputFile = Paths.get(iargs.peek());
           break;
-        case "--checks_only":
-          checksOnly = true;
-          break;
         case "--create_source_map":
           createSourceMap = Paths.get(iargs.peek());
           break;
@@ -141,6 +146,10 @@ public final class JsCompiler implements CommandLineProgram {
           break;
       }
       passThroughArgs.add(arg);
+    }
+
+    if ((compilerConfig == null) != (compilerReport == null)) {
+      throw new IOException("compiler_config and compiler_report must be supplied together");
     }
 
     // Keep track of modules defined *only* in rules that don't have the suppress attribute,
@@ -173,7 +182,21 @@ public final class JsCompiler implements CommandLineProgram {
 
     // Run the compiler, capturing error messages.
     boolean failed = false;
-    Compiler compiler = new Compiler();
+    CompilerFactory factory = null;
+    Compiler compiler;
+    if (compilerConfig == null) {
+      compiler = new Compiler();
+    } else {
+      var factories = ServiceLoader.load(CompilerFactory.class).iterator();
+      if (!factories.hasNext()) {
+        throw new IOException("No CompilerFactory is available for compiler_config");
+      }
+      factory = factories.next();
+      if (factories.hasNext()) {
+        throw new IOException("Multiple CompilerFactory implementations are available");
+      }
+      compiler = factory.create(compilerConfig, compilerReport);
+    }
     JsCheckerErrorFormatter errorFormatter = new JsCheckerErrorFormatter(compiler, roots, labels);
     errorFormatter.setColorize(true);
     JsCheckerErrorManager errorManager = new JsCheckerErrorManager(errorFormatter);
@@ -186,10 +209,16 @@ public final class JsCompiler implements CommandLineProgram {
             compiler,
             exportTestFunctions,
             warnings);
-    if (runner.shouldRunCompiler()) {
+    boolean compiled = runner.shouldRunCompiler();
+    if (compiled) {
       failed |= runner.go() != 0;
     }
     failed |= runner.hasErrors();
+    CompilerOptions options = compiler.getOptions();
+    boolean checksOnly = options != null && options.isChecksOnly();
+    if (compiled && !failed && !checksOnly && factory != null && jsOutputFile != null) {
+      factory.finish(compiler, jsOutputFile);
+    }
 
     // Output error messages based on diagnostic settings.
     if (!expectFailure && !expectWarnings) {
