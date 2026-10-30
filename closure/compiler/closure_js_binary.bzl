@@ -37,6 +37,9 @@ load(
     "unfurl",
 )
 
+def _closure_link_resources(_os_name, _input_count):
+    return {"cpu": 1, "memory": 3 * 1024}
+
 _dependency_mode_warning = "\n".join([
     "{target}: dependency_mode={old_mode} is deprecated and will be " +
     "removed soon; prefer to use its equivalent {new_mode}.",
@@ -286,8 +289,9 @@ def _impl(ctx):
         outputs = outputs,
         executable = ctx.executable.compiler,
         arguments = [all_args],
-        mnemonic = "Closure",
+        mnemonic = "ClosureLink",
         execution_requirements = {"supports-workers": "1"},
+        resource_set = _closure_link_resources,
         progress_message = "Compiling %d JavaScript files to %s" % (
             len(js.srcs.to_list()),
             ctx.outputs.bin.short_path,

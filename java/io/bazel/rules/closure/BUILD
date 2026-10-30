@@ -21,6 +21,7 @@ licenses(["notice"])
 java_binary(
     name = "ClosureWorker",
     jvm_flags = [
+        "-Xmx2g",
         "-Xss20m",  # JSCompiler needs big stacks for recursive parsing
         "-XX:+UseParallelGC",  # Best GC when app isn't latency sensitive
     ],
