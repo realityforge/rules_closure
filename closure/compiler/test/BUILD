@@ -18,6 +18,7 @@ licenses(["notice"])
 
 load("//closure/private:file_test.bzl", "file_test")
 load("//closure:defs.bzl", "closure_js_binary", "closure_js_library")
+load("@rules_shell//shell:sh_test.bzl", "sh_test")
 
 closure_js_library(
     name = "hello_lib",
